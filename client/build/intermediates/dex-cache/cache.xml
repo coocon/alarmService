@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/coocon/AndroidStudioProjects/telme/app/libs/android-support-v4.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="9b6a9a9078af571732159b904ad423b03b7cc786">
+        <dex dex="/Users/coocon/AndroidStudioProjects/telme/app/build/intermediates/pre-dexed/debug/android-support-v4-973f4cfda4b3dd0916950d92f8905a0645197044.jar" />
+    </item>
+    <item
+        jar="/Users/coocon/AndroidStudioProjects/telme/app/libs/org.eclipse.paho.client.mqttv3.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="70c9dff60110bef9c7eab821f0c45e50df24415d">
+        <dex dex="/Users/coocon/AndroidStudioProjects/telme/app/build/intermediates/pre-dexed/debug/org.eclipse.paho.client.mqttv3-9b6a36f2e6987e9f3696a16ab125717a821df4a6.jar" />
+    </item>
+
+</items>
