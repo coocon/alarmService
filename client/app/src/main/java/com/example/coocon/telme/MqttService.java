@@ -19,6 +19,7 @@ import android.net.NetworkInfo.State;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -106,8 +107,12 @@ public class MqttService extends Service
 
 
 
-    //private final static String CONNECTION_STRING = "tcp://192.168.1.103:1883";
-    private final static String CONNECTION_STRING = "tcp://alarm.coocons.com:1883";
+    //private final static String CONNECTION_STRING = "tcp://alarm.coocons.com:1883";
+    private final static String PORT = ":1883";
+    private final static String PROTOCOL = "tcp://";
+    public static String HOST = "alarm.coocons.com";
+
+
 
     private final static short KEEP_ALIVE = 30;//低耗网络，但是又需要及时获取数据，心跳30s
     private final static int  QOS = 1;
@@ -120,7 +125,10 @@ public class MqttService extends Service
 
 
     // Static method to start the service
-    public static void actionStart(Context ctx) {
+    public static void actionStart(Context ctx, String host) {
+        HOST = host;
+        System.out.println("set host:" + HOST);
+
         Intent i = new Intent(ctx, MqttService.class);
         i.setAction(ACTION_START);
         ctx.startService(i);
@@ -154,6 +162,8 @@ public class MqttService extends Service
         mPrefs = getSharedPreferences(TAG, MODE_PRIVATE);
         mConnMan = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
 
+        TelephonyManager tm = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
+        CLIENT_ID = tm.getDeviceId();
 
 		/* If our process was reaped by the system for any reason we need
 		 * to restore our state with merely a call to onCreate.  We record
@@ -199,14 +209,7 @@ public class MqttService extends Service
 
     @Override
     public  int  onStartCommand (Intent intent,int flags, int startId) {
-        if (client == null) {
-            try {
-                client = new MqttClient(CONNECTION_STRING,CLIENT_ID, null);
-            } catch (MqttException e) {
-                // TODO Auto-generated catch block
-                //e.printStackTrace();
-            }
-        }
+
         //super.onStart(intent, startId);
         log("Service started with intent=" + intent);
 
@@ -227,35 +230,6 @@ public class MqttService extends Service
 
 
 
-/*
-
-    @Override
-    public void onStart(Intent intent, int startId) {
-        if (client == null) {
-            try {
-                client = new MqttClient(CONNECTION_STRING,CLIENT_ID, null);
-            } catch (MqttException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        //super.onStart(intent, startId);
-        log("Service started with intent=" + intent);
-
-        // Do an appropriate action based on the intent.
-        if (intent.getAction().equals(ACTION_STOP) == true) {
-            stop();
-            stopSelf();
-        } else if (intent.getAction().equals(ACTION_START) == true) {
-            start();
-        } else if (intent.getAction().equals(ACTION_RECONNECT) == true) {
-
-            if (isNetworkAvailable()) {
-                reconnectIfNecessary();
-            }
-        }
-    }
-*/
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -311,6 +285,7 @@ public class MqttService extends Service
         // Any existing reconnect timers should be removed, since we explicitly stopping the service.
         try {
             client.disconnect();
+
         } catch (MqttException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -326,9 +301,19 @@ public class MqttService extends Service
     public void connect( ) {
 
         try {
+            String CONNECTION_STRING = PROTOCOL + HOST + PORT;
 
             if (client == null) {
+                System.out.print(CONNECTION_STRING);
                 client = new MqttClient(CONNECTION_STRING,CLIENT_ID, null);
+            }
+            else {
+                String server = client.getServerURI();
+                if (!server.equals(CONNECTION_STRING) ) {
+
+                    client = new MqttClient(CONNECTION_STRING,CLIENT_ID, null);
+                }
+
             }
 
 
@@ -383,7 +368,7 @@ public class MqttService extends Service
                 for (int i = 0; i < networkInfos.length; i++) {
                     State state = networkInfos[i].getState();
                     if (NetworkInfo.State.CONNECTED==state) {
-                        System.out.println("------------> Network is ok");
+                        System.out.println("\n------------> Network is ok");
                         hasConnectivity =  true;
                         break;
                     }
@@ -417,13 +402,14 @@ public class MqttService extends Service
         Notification notification = new NotificationCompat.Builder(ctx)
                 .setContentTitle("51cache")
                 .setContentText(text)
-                .setDefaults(Notification.DEFAULT_ALL) //设置默认铃声，震动等
+                //.setDefaults(Notification.DEFAULT_ALL) //设置默认铃声，震动等
                 .setSmallIcon(iconResID)
                 .setContentIntent(m_PendingIntent)
                 .setAutoCancel(true)
                         //    .setLargeIcon(aBitmap)
                 .build();
         int id = (int) System.currentTimeMillis();
+
         notificationManager.notify(id, notification);
 
     }
@@ -487,7 +473,7 @@ public class MqttService extends Service
             }
             if (obj.has("topic")) {
                 System.out.println(obj.toString());
-                showNotification(obj.toString());
+                showNotification(msg);
                 sendTel(msg);
             }
 

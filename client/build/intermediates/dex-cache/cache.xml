@@ -9,6 +9,20 @@
         <dex dex="/Users/coocon/AndroidStudioProjects/telme/app/build/intermediates/pre-dexed/debug/android-support-v4-973f4cfda4b3dd0916950d92f8905a0645197044.jar" />
     </item>
     <item
+        jar="/Users/coocon/work/sophnep/portal/src/webapps/alarm_app/client/telme/app/libs/org.eclipse.paho.client.mqttv3.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="70c9dff60110bef9c7eab821f0c45e50df24415d">
+        <dex dex="/Users/coocon/work/sophnep/portal/src/webapps/alarm_app/client/telme/app/build/intermediates/pre-dexed/debug/org.eclipse.paho.client.mqttv3-f2c9dcfffec2bcdc80c687462d0bce02b58105d3.jar" />
+    </item>
+    <item
+        jar="/Users/coocon/work/sophnep/portal/src/webapps/alarm_app/client/telme/app/libs/android-support-v4.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="9b6a9a9078af571732159b904ad423b03b7cc786">
+        <dex dex="/Users/coocon/work/sophnep/portal/src/webapps/alarm_app/client/telme/app/build/intermediates/pre-dexed/debug/android-support-v4-36e93c0cecc02dd1b80d3c548b8483f9f7059af7.jar" />
+    </item>
+    <item
         jar="/Users/coocon/AndroidStudioProjects/telme/app/libs/org.eclipse.paho.client.mqttv3.jar"
         jumboMode="false"
         revision="20.0.0"

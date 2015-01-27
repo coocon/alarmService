@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -32,10 +33,13 @@ public class MainActivity extends Activity {
     private WakeLock wakeLock;
     private boolean iswakeLock = true;// 是否常亮
     private TelephonyManager mTtelephonyManager;
+    private static SharedPreferences mPrefs;
+    private static Boolean isCalling = false;
+    private  static List<String> phoneList = new ArrayList<String>();
 
-    private  PhoneCallListener mPhoneCallListener;
+    private  PhoneCallListener mPhoneCallListener = new PhoneCallListener();
 
-
+    private static Context myCxt;
     public static String [] strList = new String[]{
             "first", "second", "third", "fourth", "fifth"
     };
@@ -63,6 +67,7 @@ public class MainActivity extends Activity {
         mTtelephonyManager =  (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         mTtelephonyManager.listen(mPhoneCallListener, PhoneStateListener.LISTEN_CALL_STATE);
 
+
     }
 
 
@@ -70,9 +75,6 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
-
-
 
 
         return true;
@@ -101,17 +103,22 @@ public class MainActivity extends Activity {
      */
     public static class PlaceholderFragment extends Fragment {
         private Button btnOK;
-        private Button btnCancel;
+        private Button btnSet;
         private Switch btnSwitch;
         private EditText myText;
+        private EditText myHost;
+
         private ListView listView;
         private GridView gridView;
 
         private  List<String> listData = new ArrayList<String>();
 
+
         public List<String> getListData() {
             return listData;
         }
+
+
 
         public  Boolean addListData(String msg){
             Boolean res = listData.add(msg);
@@ -143,6 +150,8 @@ public class MainActivity extends Activity {
                 new ArrayAdapter(context, android.R.layout.simple_gallery_item, listData)
             );
             myText = (EditText) rootView.findViewById(R.id.txtTel);
+            myHost = (EditText) rootView.findViewById(R.id.txtHost);
+
             btnOK = (Button) rootView.findViewById(R.id.btnOK);
             btnOK.setOnClickListener(new View.OnClickListener() {
 
@@ -155,6 +164,16 @@ public class MainActivity extends Activity {
                     }
                     myText.getText().clear();
                     addListData(str);
+                  //  BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                  //  btAdapter.enable();
+                  //  String name = btAdapter.getName();
+                  //  String address =  btAdapter.getAddress();
+                  // System.out.println(address + name);
+                  // address = "88:0F:10:00:EE:54";
+                    //BluetoothConnectActivityReceiver
+                   // String address = "22:22:9B:61:5C:8C";
+                    //ClsUtils.pair(address, "0" );
                 }
             });
 
@@ -162,8 +181,9 @@ public class MainActivity extends Activity {
             btnSwitch.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    String host = myHost.getText().toString().trim();
                     if (b) {
-                        MqttService.actionStart(context);
+                        MqttService.actionStart(context, host);
                     }
                     else {
                         MqttService.actionStop(context);
@@ -172,9 +192,9 @@ public class MainActivity extends Activity {
                 }
             });
 
+            String host = myHost.getText().toString().trim();
 
-
-            MqttService.actionStart(context);
+            MqttService.actionStart(context, host);
 
             return rootView;
         }
@@ -183,7 +203,7 @@ public class MainActivity extends Activity {
 
     }
         @Override
-       protected void onResume() {
+    protected void onResume() {
         // TODO Auto-generated method stub
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
@@ -218,37 +238,85 @@ public class MainActivity extends Activity {
         if (num != ""  ) {
             str = num;
         }
-        Intent phoneIntent = new Intent(
-                Intent.ACTION_CALL, Uri.parse("tel:" + str));
-        ctx.startActivity(phoneIntent);
+        addPhoneList(str);
+        exec(ctx);
+        myCxt = ctx;
+    }
+    public static void exec(Context ctx){
+        List<String> list = getPhoneList();
+        int len = list.size();
+        String str = "";
+        if (len > 0 ) {
+            str = list.get(0);
+        }
+        boolean isCalling = checkIsCalling();
+
+        if (!isCalling && !str.isEmpty()) {
+
+
+            Intent phoneIntent = new Intent(
+                    Intent.ACTION_CALL, Uri.parse("tel:" + str));
+            ctx.startActivity(phoneIntent);
+            removePhoneList(str);
+        }
+
+    }
+
+    private static boolean checkIsCalling() {
+       // boolean res = mPrefs.getBoolean("isCalling", false);
+        boolean res = isCalling;
+        return res;
 
     }
 
 
+    public static List<String> removePhoneList(String num) {
+        phoneList.remove(num);
 
+        return phoneList;
+    }
 
+    public static List<String> getPhoneList() {
+        return phoneList;
+    }
+
+    public  static List<String> addPhoneList(String num) {
+        if (! phoneList.contains(num)) {
+            phoneList.add(num);
+        }
+
+        return phoneList;
+    }
 
     public class PhoneCallListener extends PhoneStateListener {
         private boolean bphonecalling = false;
 
         @Override
         public void onCallStateChanged(int state, String incomingnumber) {
+            isCalling = true;
             // seems the incoming number is this call back always ""
             if (TelephonyManager.CALL_STATE_OFFHOOK == state) {
-                bphonecalling = true;
-            } else if (TelephonyManager.CALL_STATE_IDLE == state
-                    && bphonecalling) {
+                isCalling = true;
+                //mPrefs.edit().putBoolean("isCalling", bphonecalling).commit();
+
+            } else if (TelephonyManager.CALL_STATE_IDLE == state) {
+                /*
                 if (mTtelephonyManager != null) {
                     mTtelephonyManager.listen(mPhoneCallListener,
                             PhoneStateListener.LISTEN_NONE);
                 }
-                bphonecalling = false;
+                */
+                isCalling = false;
 
                 Intent i = getPackageManager().getLaunchIntentForPackage(
                         getPackageName());
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(i);
+                System.out.println("incomeingnumber:" + incomingnumber);
+
+                exec(myCxt);
+
 
             }
 

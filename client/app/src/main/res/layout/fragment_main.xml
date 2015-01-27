@@ -56,21 +56,38 @@
         android:layout_below="@+id/btnSwitch"
         android:fillViewport="false" />
 
-    <TextClock
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textClock"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/scrollView" />
-
     <GridView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/gridView"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/scrollView"
         android:layout_above="@+id/btnOK"
         android:theme="@style/AppTheme"
-        android:background="#ffb6abff" />
+        android:background="#ffb6abff"
+        android:layout_below="@+id/txtHost" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtHost"
+        android:text="alarm.coocons.com"
+        android:layout_alignEnd="@+id/txtTel"
+        android:layout_below="@+id/scrollView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="服务HOST："
+        android:id="@+id/textView"
+        android:layout_alignParentStart="true"
+
+        android:layout_above="@+id/gridView"
+        android:layout_below="@+id/scrollView"
+        android:layout_toStartOf="@+id/txtHost"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentLeft="false"
+        android:autoText="false"
+        android:layout_alignParentTop="false" />
 
 </RelativeLayout>
